@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dynamic Scheduler - Dashboard</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#f7f9fc;padding:40px;text-align:center}
+    h1{color:#222}
+    .btn{display:inline-block;margin:8px;padding:12px 22px;background:#4e79a7;color:#fff;border-radius:8px;text-decoration:none}
+    .btn:hover{background:#345e85}
+  </style>
+</head>
+<body>
+  <h1>Dynamic Scheduling System<br><span style="font-size:16px;color:#666;">Department of Electronics & Computer Science, Shri Ramdeobaba College Of Engineering and Management</span></h1>
+  <button class="btn" id="genBtn">🔄 Generate Timetable</button>
+  <a class="btn" href="/clear">🗑 Clear Timetable</a>
+<p id="status"></p>
+
+<script>
+function showToast(message, success=true) {
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.style.position = 'fixed';
+  toast.style.bottom = '20px';
+  toast.style.right = '20px';
+  toast.style.background = success ? '#4BB543' : '#E74C3C';
+  toast.style.color = 'white';
+  toast.style.padding = '12px 18px';
+  toast.style.borderRadius = '8px';
+  toast.style.boxShadow = '0 3px 10px rgba(0,0,0,0.2)';
+  toast.style.fontWeight = '600';
+  toast.style.zIndex = '9999';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+document.getElementById('genBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  showToast('Generating timetable...', true);
+  try {
+    const res = await fetch('/generate');
+    const data = await res.json();
+    if (data.status === "success") {
+      showToast("✅ " + data.message + " (" + data.count + " entries)", true);
+    } else {
+      showToast("⚠️ " + (data.message || "Failed"), false);
+    }
+  } catch(e){
+    showToast("⚠️ Error connecting to server.", false);
+  }
+  btn.disabled = false;
+});
+</script>
+
+
+  <a class="btn" href="/timetable">📅 View Timetable</a>
+  <a class="btn" href="/analytics">📊 Analytics</a>
+  <a class="btn" href="/export/pdf">🧾 Export PDF</a>
+  <a class="btn" href="/export/excel">📥 Export Excel</a>
+</body>
+</html>
