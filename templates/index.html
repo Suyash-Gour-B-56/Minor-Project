@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#f7f9fc;padding:30px}
+    .wrap{display:flex;flex-wrap:wrap;gap:20px;justify-content:center}
+    .card{background:#fff;padding:14px;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.06)}
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center">Analytics</h1>
+  <div class="wrap">
+    <div class="card"><canvas id="facultyChart" width="450" height="300"></canvas></div>
+    <div class="card"><canvas id="roomChart" width="450" height="300"></canvas></div>
+    <div class="card" style="width:920px"><canvas id="dailyChart" width="900" height="300"></canvas></div>
+  </div>
+  <div style="text-align:center;margin-top:18px"><a href="/">← Dashboard</a></div>
+
+  <script>
+    fetch('/analytics_data')
+      .then(r => r.json())
+      .then(data => {
+        if (data.status !== 'success') {
+          alert('Error loading analytics: ' + (data.message||''));
+          return;
+        }
+        const fw = data.faculty_workload;
+        const fwLabels = fw.map(x=>x.faculty_name);
+        const fwData = fw.map(x=>x.classes);
+
+        const rw = data.room_usage;
+        const rwLabels = rw.map(x=>x.room_name);
+        const rwData = rw.map(x=>x.usage_count);
+
+        const dl = data.daily_load;
+        const dlLabels = dl.map(x=>x.day_of_week);
+        const dlData = dl.map(x=>x.total_classes);
+
+        new Chart(document.getElementById('facultyChart'), {
+          type:'bar',
+          data:{labels:fwLabels, datasets:[{label:'Classes', data:fwData, backgroundColor:'#4e79a7'}]},
+          options:{responsive:true, scales:{y:{beginAtZero:true}}}
+        });
+
+        new Chart(document.getElementById('roomChart'), {
+          type:'pie',
+          data:{labels:rwLabels, datasets:[{data:rwData, backgroundColor:['#f28e2b','#e15759','#76b7b2','#59a14f','#edc948']}]},
+          options:{responsive:true}
+        });
+
+        new Chart(document.getElementById('dailyChart'), {
+          type:'line',
+          data:{labels:dlLabels, datasets:[{label:'Classes per day', data:dlData, borderColor:'#af7aa1', tension:0.3}]},
+          options:{responsive:true, scales:{y:{beginAtZero:true}}}
+        });
+      })
+      .catch(e=>{ alert('Could not load analytics'); });
+  </script>
+</body>
+</html>
